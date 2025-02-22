@@ -48,9 +48,6 @@ import { DialogClose } from "@radix-ui/react-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-// FIXME: https://twitter.com/lemcii/status/1659649371162419202?s=46&t=gqNnMIjMWXiG2Rbrr5gT6g
-// Removing states would help maybe?
-
 type Framework = Record<"value" | "label" | "color", string>;
 
 const FRAMEWORKS = [
@@ -104,8 +101,8 @@ export function FancyBox() {
 
   const createFramework = (name: string) => {
     const newFramework = {
-      value: name.toLowerCase(),
-      label: name,
+      value: name.toLowerCase().trim(),
+      label: name.trim(),
       color: "#ffffff",
     };
     setFrameworks((prev) => [...prev, newFramework]);
@@ -169,7 +166,11 @@ export function FancyBox() {
               ref={inputRef}
               placeholder="Search framework..."
               value={inputValue}
-              onValueChange={setInputValue}
+               onValueChange={(value) => {
+                setTimeout(() => {
+                  setInputValue(value);
+                }, 0.1);
+              }}
             />
             <CommandList>
               <CommandGroup className="max-h-[145px] overflow-auto">
@@ -287,19 +288,18 @@ const CommandItemCreate = ({
   frameworks: Framework[];
   onSelect: () => void;
 }) => {
-  const hasNoFramework = !frameworks
-    .map(({ value }) => value)
-    .includes(`${inputValue.toLowerCase()}`);
+   const input = inputValue.toLowerCase();
 
-  const render = inputValue !== "" && hasNoFramework;
+  const render =
+    inputValue !== "" &&
+    !frameworks.some(({ value }) => value === input || value === input.trim());
 
   if (!render) return null;
 
-  // BUG: whenever a space is appended, the Create-Button will not be shown.
   return (
     <CommandItem
       key={`${inputValue}`}
-      value={`${inputValue}`}
+      value={input.includes(" ") ? `:${inputValue}:` : inputValue}
       className="text-xs text-muted-foreground"
       onSelect={onSelect}
     >
